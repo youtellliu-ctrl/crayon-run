@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>蜡笔跑酷大作战</title>
+<title>GOGOGO</title>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
 <style>
@@ -40,14 +40,14 @@ button:disabled{opacity:.45;cursor:default}
 #netStat{font-size:17px;min-height:24px}
 #res table{border-collapse:collapse;font-size:20px;margin:4px 0}
 #res td{padding:4px 16px;border-bottom:2px dashed #c9b98f}
-</style>
+#menu{gap:4px}#menu h1{font-size:44px}.card canvas{width:74px;height:74px}</style>
 </head>
 <body>
 <div id="wrap"><div id="stage">
 <canvas id="c" width="960" height="540"></canvas>
 
 <div id="menu" class="ov">
-  <h1>蜡笔跑酷大作战</h1>
+  <h1>GOGOGO</h1>
   <div class="sub">小黄队赛跑 · 先冲过终点的赢！</div>
   <div class="row" id="modes">
     <button class="hand on" data-mode="pvp">👥 双人对战</button>
@@ -58,7 +58,7 @@ button:disabled{opacity:.45;cursor:default}
     <div class="pk" id="pk0"><b>1P 选角色</b><div class="cards"></div><small>W 跳 · S 滑铲</small></div>
     <div class="pk" id="pk1"><b id="p2t">2P 选角色</b><div class="cards"></div><small id="p2k">↑ 跳 · ↓ 滑铲</small></div>
   </div>
-  <div class="row" id="diffs" style="display:none">
+  <div class="row" id="diffs" style="display:none"><span style="align-self:center;font-size:20px">难度：</span>
     <button class="hand" data-d="0">简单</button><button class="hand on" data-d="1">普通</button><button class="hand" data-d="2">困难</button>
   </div>
   <div class="netp" id="net" style="display:none">
@@ -247,7 +247,7 @@ function gen(seed){const r=rng(seed);obs=[];stars=[];let x=1100;
       if(type==='sign')for(let k=-1;k<=1;k++)stars.push({x:cx+k*40,h:16,got:[0,0]});
       else for(let k=-1;k<=1;k++)stars.push({x:cx+k*40,h:o.h+48-Math.abs(k)*20,got:[0,0]});}
     else if(r()<.35){const sx=x+o.w+170;for(let k=0;k<3;k++)stars.push({x:sx+k*38,h:22,got:[0,0]});}
-    x+=430+r()*520+(type==='crate2'?110:0);}
+    x+=[650,430,460][diff]+r()*[560,520,420][diff]+(type==='crate2'?110:0);}
 }
 function newPlayer(i,ch,cpu){return{i,ch,cpu,x:0,y:0,vy:0,onGround:true,jumps:0,slideHeld:false,stun:0,inv:0,boost:0,speed:0,
   done:false,time:0,jb:0,idx:0,stars:0,hits:0,plan:{},cpuSlide:false,gl:[],remote:false,gone:false,tx:0,rt:0,lastX:-1,wasStun:false};}
@@ -270,7 +270,7 @@ function update(dt){
     if(p.remote){netRemote(p,dt);continue;}
     if(p.cpu)cpuThink(p);
     p.stun=Math.max(0,p.stun-dt);p.inv=Math.max(0,p.inv-dt);p.boost=Math.max(0,p.boost-dt);p.jb=Math.max(0,p.jb-dt);
-    let base=Math.min(560,390+raceT*3.2);
+    let base=Math.min([470,560,640][diff],[330,390,450][diff]+raceT*3.2);
     if(p.boost>0)base*=1.32;
     if(p.stun>0)base=150;
     if(p.done)base=Math.max(0,p.x>FINISH+400?0:250);
@@ -405,7 +405,7 @@ const cardCv=[[],[]];
 function refresh(){[0,1].forEach(pi=>document.querySelectorAll(`#pk${pi} .card`).forEach((b,ci)=>b.classList.toggle('on',pick[pi]===ci)));
   document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
   document.querySelectorAll('#diffs button').forEach(b=>b.classList.toggle('on',+b.dataset.d===diff));
-  document.getElementById('diffs').style.display=mode==='cpu'?'flex':'none';
+  document.getElementById('diffs').style.display='flex';
   document.getElementById('net').style.display=mode==='net'?'flex':'none';
   document.getElementById('pk1').style.display=mode==='net'?'none':'flex';
   document.querySelector('#pk0 small').textContent=mode==='net'?'W/S、↑/↓ 或空格都能操作':'W 跳 · S 滑铲';
@@ -468,9 +468,9 @@ async function leaveNet(){if(NR){const r=NR;NR=null;myReady=false;try{await r.le
 function netCheck(){if(!NR||mode!=='net'||state!=='menu'||!myReady)return;const o=getOpp();if(!o)return;
   const pr=o.presence;isHost=myPeer()<o.peer;
   if(isHost){if(pr.rd)beginNet(Math.random().toString(36).slice(2,8),(Math.random()*1e9)|0,pr.ch);}
-  else if(pr.go&&typeof pr.go.id==='string'&&pr.go.id!==lastRace&&Number.isFinite(pr.go.seed))beginNet(pr.go.id,pr.go.seed,pr.ch);}
+  else if(pr.go&&typeof pr.go.id==='string'&&pr.go.id!==lastRace&&Number.isFinite(pr.go.seed))(diff=[0,1,2].includes(pr.go.diff)?pr.go.diff:diff,beginNet(pr.go.id,pr.go.seed,pr.ch));}
 function beginNet(id,seed,och){lastRace=id;myReady=false;oppCh=okCh(och);
-  const patch={rd:false,rid:id,inr:1,x:0,y:0,d:0,t:0,st:0,g:[],f:1,sp:0};if(isHost)patch.go={id,seed};
+  const patch={rd:false,rid:id,inr:1,x:0,y:0,d:0,t:0,st:0,g:[],f:1,sp:0};if(isHost)patch.go={id,seed,diff};
   netPres(patch);startRace(seed);}
 function netTick(){if(!NR||mode!=='net'||state!=='race')return;const now=performance.now();if(now-lastSend<50)return;lastSend=now;
   const p=players[0];const f=(p.onGround?1:0)|(p.slideHeld?2:0)|(p.stun>0?4:0)|(p.inv>0?8:0)|(p.boost>0?16:0);
